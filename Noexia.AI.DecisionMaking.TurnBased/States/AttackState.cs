@@ -80,13 +80,16 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			TotalDamagesAverage = totalDamagesAverage;
 		}
 
-		public AttackState(AttackData a_attackData, Dictionary<int, int> a_usePerTarget, int a_usePerTurn)
+		public AttackState(AttackData a_attackData, Dictionary<int, int> a_usePerTarget, int a_usePerTurn,
+			Dictionary<EElement, int> totalDamagesMin, Dictionary<EElement, int> totalDamagesMax, Dictionary<EElement, int> totalDamagesAverage)
 		{
 			m_attackData = a_attackData;
 			m_usePerTargets = a_usePerTarget;
 			m_usesPerTurn = a_usePerTurn;
 
-
+			TotalDamagesMin = totalDamagesMin;
+			TotalDamagesMax = totalDamagesMax;
+			TotalDamagesAverage = totalDamagesAverage;
 		}
 
 		public bool CanUse(int a_characterId)
@@ -119,7 +122,8 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 
 		public AttackState Clone()
 		{
-			return new AttackState(m_attackData, new Dictionary<int, int>(m_usePerTargets), m_usesPerTurn);
+			return new AttackState(m_attackData, new Dictionary<int, int>(m_usePerTargets), m_usesPerTurn,
+				TotalDamagesMin.ToDictionary(), TotalDamagesMax.ToDictionary(), TotalDamagesAverage.ToDictionary());
 		}
 	}
 }

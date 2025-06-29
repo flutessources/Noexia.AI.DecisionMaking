@@ -145,6 +145,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 				var damageResult = Formulas.ComputeDamages(attack.GetData, Player, attackEnemyTarget);
 
 				Player.UseAp(attack.ApCost);
+				attack.Use(attackEnemyTarget.Id);
 
 				// Application des dommages:
 				// On applique toujours avec la valeur mini
