@@ -40,7 +40,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 
 				CellState nextCell = a_map.GetCell(nextX, nextY);
 
-				if (nextCell.IsWalabke)
+                                if (nextCell.IsWalkable)
 				{
 					currentCell = nextCell;
 				}

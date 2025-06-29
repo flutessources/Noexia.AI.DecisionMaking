@@ -12,7 +12,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 		private readonly CellData m_cellData;
 		public int CharacterId { get; private set; } = 0;
 		private bool m_isWalkable = true;
-		public bool IsWalabke => m_cellData.isWalkable && m_isWalkable;
+                public bool IsWalkable => m_cellData.isWalkable && m_isWalkable;
 		public int X => m_cellData.x;
 		public int Y => m_cellData.y;
 		public int Id => m_cellData.id;
@@ -55,9 +55,9 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			return true;
 		}
 
-		public CellState Clone()
-		{
-			return new CellState(m_cellData, CharacterId, IsWalabke);
-		}
+                public CellState Clone()
+                {
+                        return new CellState(m_cellData, CharacterId, IsWalkable);
+                }
 	}
 }
