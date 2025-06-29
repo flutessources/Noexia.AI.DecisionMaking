@@ -110,13 +110,14 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 		public void Use(int a_characterId)
 		{
 			m_usesPerTurn--;
+
 			if (m_usePerTargets.ContainsKey(a_characterId))
 			{
 				m_usePerTargets[a_characterId]--;
 			}
 			else
 			{
-				m_usePerTargets[a_characterId] = m_attackData.usePerTarget;
+				m_usePerTargets.Add(a_characterId, m_attackData.usePerTarget - 1);
 			}
 		}
 
