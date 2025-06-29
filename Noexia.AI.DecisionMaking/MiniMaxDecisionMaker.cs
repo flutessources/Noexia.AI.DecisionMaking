@@ -26,7 +26,15 @@ namespace Noexia.AI.DecisionMaking
 					bestState = state;
 				}
 
-				MakeDecision(state, ref a_totalIterations, ref bestState);
+				T? result = MakeDecision(state, ref a_totalIterations, ref bestState);
+				if (result != null && (bestState == null || result.TotalScore > bestState.TotalScore ||
+						(result.TotalScore == bestState.TotalScore && result.Actions.Count < bestState.Actions.Count)))
+				{
+					bestState = result;
+				}
+
+				a_bestState = bestState ?? a_bestState;
+				return bestState;
 			}
 
 			return bestState;

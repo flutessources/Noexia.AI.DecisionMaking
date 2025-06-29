@@ -221,17 +221,6 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 			}
 
 			m_history.Add($"End with {TotalScore + score} score (pa:{Player.ap}, pm:{Player.mp})");
-			foreach(var attack in Player.Attacks)
-			{
-				string canUsesText = "";
-				foreach(var ennemi in Ennemies)
-				{
-					bool canUse = attack.CanUse(ennemi.Key);
-					canUsesText += $", {ennemi.Key}({ennemi.Value.lp}) : {canUse}";
-				}
-
-				m_history.Add($"Attack {attack.Id} " + canUsesText);
-			}
 
 			m_actions.Add(a_action);
 
