@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Noexia.AI.DecisionMaking.TurnBased/1.0.0": {
+        "dependencies": {
+          "Noexia.AI.DecisionMaking": "1.0.0"
+        },
+        "runtime": {
+          "Noexia.AI.DecisionMaking.TurnBased.dll": {}
+        }
+      },
+      "Noexia.AI.DecisionMaking/1.0.0": {
+        "runtime": {
+          "Noexia.AI.DecisionMaking.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Noexia.AI.DecisionMaking.TurnBased/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Noexia.AI.DecisionMaking/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
