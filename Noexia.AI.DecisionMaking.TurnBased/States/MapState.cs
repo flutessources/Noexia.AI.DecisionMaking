@@ -104,8 +104,8 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			int left = a_startX - 1;
 			if (left >= 0)
 			{
-				CellState leftCell = m_cells[left, a_startY];
-				if (a_walkable == false || leftCell.IsWalabke)
+                                CellState leftCell = m_cells[left, a_startY];
+                                if (a_walkable == false || leftCell.IsWalkable)
 				{
 					cells.Add(m_cells[left, a_startY]);
 				}
@@ -114,8 +114,8 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			int right = a_startX + 1;
 			if (right < Width)
 			{
-				CellState rightCell = m_cells[right, a_startY];
-				if (a_walkable == false || rightCell.IsWalabke)
+                                CellState rightCell = m_cells[right, a_startY];
+                                if (a_walkable == false || rightCell.IsWalkable)
 				{
 					cells.Add(m_cells[right, a_startY]);
 				}
@@ -124,7 +124,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			int up = a_startY - 1;
 			if (up >= 0)
 			{
-				if (a_walkable == false || m_cells[a_startX, up].IsWalabke)
+                                if (a_walkable == false || m_cells[a_startX, up].IsWalkable)
 				{
 					cells.Add(m_cells[a_startX, up]);
 				}
@@ -133,7 +133,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			int down = a_startY + 1;
 			if (down < Height)
 			{
-				if (a_walkable == false || m_cells[a_startX, down].IsWalabke)
+                                if (a_walkable == false || m_cells[a_startX, down].IsWalkable)
 				{
 					cells.Add(m_cells[a_startX, down]);
 				}
