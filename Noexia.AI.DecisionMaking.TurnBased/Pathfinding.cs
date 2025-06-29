@@ -21,11 +21,10 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 			int dirX = Math.Sign(a_from.X - a_pusher.X);
 			int dirY = Math.Sign(a_from.Y - a_pusher.Y);
 
-			if ((dirX == 1 && dirY == 0)
-				|| (dirX == -1 && dirY == 0)
-				|| (dirX == 0 && dirY == 1)
-				|| (dirX == 0 && dirY == -1)
-				== false)
+                        if (!((dirX == 1 && dirY == 0)
+                                || (dirX == -1 && dirY == 0)
+                                || (dirX == 0 && dirY == 1)
+                                || (dirX == 0 && dirY == -1)))
 			{
 				return new PushResult { Destination = a_from, CellsBlocked = 0 }; // pas de diagonale
 			}
