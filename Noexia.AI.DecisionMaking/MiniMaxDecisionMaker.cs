@@ -6,51 +6,46 @@ using System.Threading.Tasks;
 
 namespace Noexia.AI.DecisionMaking
 {
-	public class MiniMaxDecisionMaker<T> : DecisionMaker<T>
-		where T : MomentaryState
-	{
-                public override T? MakeDecision(T a_state, ref int a_totalIterations, ref T a_bestState)
-                {
-                        T? bestState = a_bestState;
+    public class MiniMaxDecisionMaker<T> : DecisionMaker<T>
+        where T : MomentaryState
+    {
+		public override T? MakeDecision(T state, ref int totalIterations, ref T bestState)
+		{
+			if (bestState == null) bestState = state;
 
-                        var actions = a_state.GetNextLegalActions().ToList();
+			T? localBest = bestState;
+			var actions = state.GetNextLegalActions().ToList();
 
-                        if (actions.Count == 0)
-                        {
-                                a_state.FinalizeState();
+			if (actions.Count == 0)            // base case: no more moves
+				return localBest;
 
-                                if (bestState == null || a_state.TotalScore > bestState.TotalScore ||
-                                        (a_state.TotalScore == bestState.TotalScore && a_state.Actions.Count < bestState.Actions.Count))
-                                {
-                                        bestState = a_state;
-                                }
+			foreach (var action in actions)
+			{
+				T child = (T)state.Clone();
+				child.Apply(action);
+				totalIterations++;
 
-                                a_bestState = bestState ?? a_bestState;
-                                return bestState;
-                        }
+				if (localBest == null ||
+					child.TotalScore > localBest.TotalScore ||
+					(child.TotalScore == localBest.TotalScore &&
+					 child.Actions.Count < localBest.Actions.Count))
+				{
+					localBest = child;
+				}
 
-                        foreach (var action in actions)
-                        {
-                                T state = (T)a_state.Clone();
-                                state.Apply(action);
-                                a_totalIterations++;
+				T? deeper = MakeDecision(child, ref totalIterations, ref localBest);
+				if (deeper != null &&
+					(localBest == null ||
+					 deeper.TotalScore > localBest.TotalScore ||
+					 (deeper.TotalScore == localBest.TotalScore &&
+					  deeper.Actions.Count < localBest.Actions.Count)))
+				{
+					localBest = deeper;
+				}
+			}
 
-                                if (bestState == null || state.TotalScore > bestState.TotalScore ||
-                                        (state.TotalScore == bestState.TotalScore && state.Actions.Count < bestState.Actions.Count))
-                                {
-                                        bestState = state;
-                                }
-
-                                T? result = MakeDecision(state, ref a_totalIterations, ref bestState);
-                                if (result != null && (bestState == null || result.TotalScore > bestState.TotalScore ||
-                                                (result.TotalScore == bestState.TotalScore && result.Actions.Count < bestState.Actions.Count)))
-                                {
-                                        bestState = result;
-                                }
-                        }
-
-                        a_bestState = bestState ?? a_bestState;
-                        return bestState;
-                }
+			bestState = localBest ?? bestState;
+			return localBest;
+		}
 	}
 }

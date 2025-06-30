@@ -30,7 +30,7 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 					fireResitances = 15,
 					waterResitances = 5,
 					neutralResistances = 0,
-					lp = 1000,
+					lp = 100,
 					mp = 3,
 					ap = 6,
 					range = 5
@@ -53,7 +53,7 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						{
 							new AttackPushEffect
 							{
-								pushDistance = 3,
+								pushDistance = 10,
 							},
 							new AttackElementDamageEffect
 							{
@@ -68,7 +68,7 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 					{
 						name = "Flèche explosive",
 						id = 2,
-						apCost = 3,
+						apCost = 5,
 						isRangeBoostable = true,
 						isRangeLine = false,
 						isRangeNeedLineOfSight = true,
@@ -80,9 +80,9 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						{
 							new AttackElementDamageEffect
 							{
-								damagesMin = 15,
-								damagesMax = 30,
-								damagesAverage = 22,
+								damagesMin = 780,
+								damagesMax = 940,
+								damagesAverage = 800,
 								element = EElement.Fire
 							}
 						}
@@ -99,13 +99,13 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						Characteristics = new CharacteristicsData()
 						{
 							lp = 800,
-							mp = 2,
+							mp = 3,
 							ap = 5,
 							range = 4,
-							airResitances = 10,
-							earthResitances = 20,
-							fireResitances = 15,
-							waterResitances = 5,
+							airResitances = 0,
+							earthResitances = 0,
+							fireResitances = 0,
+							waterResitances = 0,
 							neutralResistances = 0
 						},
 						Attacks = new List<AttackData>
@@ -114,21 +114,21 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 							{
 								name = "Attaque de base",
 								id = 3,
-								apCost = 2,
+								apCost = 3,
 								isRangeBoostable = false,
 								isRangeLine = true,
 								isRangeNeedLineOfSight = true,
 								rangeMin = 1,
-								rangeMax = 3,
+								rangeMax = 2,
 								usePerTarget = 1,
 								usePerTurn = 3,
 								effects = new List<AttackEffectData>
 								{
 									new AttackElementDamageEffect
 									{
-										damagesMin = 5,
-										damagesMax = 10,
-										damagesAverage = 7,
+										damagesMin = 100,
+										damagesMax = 500,
+										damagesAverage = 300,
 										element = EElement.Neutral
 									}
 								}
@@ -136,53 +136,53 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						}
 					}
 				},
-				{
-					new CharacterData
-					{
-						id = 4,
-						Characteristics = new CharacteristicsData()
-						{
-							lp = 600,
-							mp = 3,
-							ap = 4,
-							range = 3,
-							airResitances = 5,
-							earthResitances = 15,
-							fireResitances = 20,
-							waterResitances = 10,
-							neutralResistances = 0
-						},
-						Attacks = new List<AttackData>
-						{
-							new AttackData
-							{
-								name = "Attaque de base",
-								id = 5,
-								apCost = 2,
-								isRangeBoostable = false,
-								isRangeLine = true,
-								isRangeNeedLineOfSight = true,
-								rangeMin = 1,
-								rangeMax = 3,
-								usePerTarget = 1,
-								usePerTurn = 3,
-								effects = new List<AttackEffectData>
-								{
-									new AttackElementDamageEffect
-									{
-										damagesMin = 8,
-										damagesMax = 12,
-										damagesAverage = 10,
-										element = EElement.Neutral
-									}
-								}
-							}
-						}
-					}
-				}
+				//{
+				//	new CharacterData
+				//	{
+				//		id = 4,
+				//		Characteristics = new CharacteristicsData()
+				//		{
+				//			lp = 600,
+				//			mp = 3,
+				//			ap = 4,
+				//			range = 3,
+				//			airResitances = 5,
+				//			earthResitances = 15,
+				//			fireResitances = 20,
+				//			waterResitances = 10,
+				//			neutralResistances = 0
+				//		},
+				//		Attacks = new List<AttackData>
+				//		{
+				//			new AttackData
+				//			{
+				//				name = "Attaque de base",
+				//				id = 5,
+				//				apCost = 2,
+				//				isRangeBoostable = false,
+				//				isRangeLine = true,
+				//				isRangeNeedLineOfSight = true,
+				//				rangeMin = 1,
+				//				rangeMax = 3,
+				//				usePerTarget = 1,
+				//				usePerTurn = 3,
+				//				effects = new List<AttackEffectData>
+				//				{
+				//					new AttackElementDamageEffect
+				//					{
+				//						damagesMin = 8,
+				//						damagesMax = 12,
+				//						damagesAverage = 10,
+				//						element = EElement.Neutral
+				//					}
+				//				}
+				//			}
+				//		}
+				//	}
+				//}
 			};
 
-			CellData[,] map = new CellData[10, 10];
+			CellData[,] map = new CellData[30, 30];
 			for (int i = 0; i < map.GetLength(0); i++)
 			{
 				for (int j = 0; j < map.GetLength(1); j++)
@@ -201,11 +201,11 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 
 			Console.WriteLine("Data crée");
 			Console.WriteLine("Décision making ...");
-			GameState? state = turnBasedDecisionMaker.MakeDecision(player, 4, 4, ennemies, map,
+			GameState? state = turnBasedDecisionMaker.MakeDecision(player, 10, 10, ennemies, map,
 				new Dictionary<int, (int a_x, int a_y)>()
 				{
-					{ 2, (1, 1) },
-					{ 4, (2, 2) }
+					{ 2, (11, 10) },
+					//{ 4, (2, 2) }
 				},
 				new WeightConfiguration(), ref totalIterations);
 			Console.WriteLine($"Décision making terminé avec {state.Actions.Count} actions et un score total de {state.TotalScore}, pour un total de {totalIterations} itérations");

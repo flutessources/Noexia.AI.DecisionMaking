@@ -21,6 +21,6 @@ namespace Noexia.AI.DecisionMaking
                 /// Called when no more actions can be applied on this state in order to
                 /// finalize the score computation. Default implementation does nothing.
                 /// </summary>
-                public virtual void FinalizeState() { }
+                public virtual void FinalizeScore() { }
         }
 }

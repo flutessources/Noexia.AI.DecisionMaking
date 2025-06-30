@@ -16,41 +16,49 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 			public int CellsBlocked;    // nb de cases « manquantes » avant l’obstacle
 		}
 
-		public static PushResult GetPushDestination(CellState a_from, CellState a_pusher, MapState a_map, int a_distance)
+		public static PushResult GetPushDestination(CellState from, CellState pusher, MapState map, int distance)
 		{
-			int dirX = Math.Sign(a_from.X - a_pusher.X);
-			int dirY = Math.Sign(a_from.Y - a_pusher.Y);
+			int dx = Math.Sign(from.X - pusher.X);
+			int dy = Math.Sign(from.Y - pusher.Y);
 
-                        if (!((dirX == 1 && dirY == 0)
-                                || (dirX == -1 && dirY == 0)
-                                || (dirX == 0 && dirY == 1)
-                                || (dirX == 0 && dirY == -1)))
+			// Diagonales ou direction nulle interdites
+			if ((dx != 0 && dy != 0) || (dx == 0 && dy == 0))
+				return new PushResult { Destination = from, CellsBlocked = 0 };
+
+			CellState lastFree = from;
+			int blocked = 0;
+			int dist = 0;
+
+			for (int step = 0; step < distance; ++step)
 			{
-				return new PushResult { Destination = a_from, CellsBlocked = 0 }; // pas de diagonale
+				int nx = lastFree.X + dx;
+				int ny = lastFree.Y + dy;
+
+				// 1. Hors carte → stop une case avant le bord
+				if (!map.InsideBounds(nx, ny))
+				{
+					blocked++;
+					break;
+				}
+
+				CellState next = map.GetCell(nx, ny);
+
+				// 2. Obstacle ou personnage → stop juste avant l’impact
+				if (!next.IsWalkable)
+				{
+					blocked++;
+					break;
+				}
+
+				lastFree = next;                          // on avance
+				dist++;
 			}
 
-			// find the last cell and return PushResult
-			CellState currentCell = a_from;
-			int cellsBlocked = 0;
-			for (int i = 0; i < a_distance; i++)
+			return new PushResult
 			{
-				int nextX = currentCell.X + dirX;
-				int nextY = currentCell.Y + dirY;
-
-				CellState nextCell = a_map.GetCell(nextX, nextY);
-
-                                if (nextCell.IsWalkable)
-				{
-					currentCell = nextCell;
-				}
-				else
-				{
-					cellsBlocked++;
-					break; // out of bounds, stop pushing
-				}
-			}
-
-			return new PushResult { Destination = currentCell, CellsBlocked = cellsBlocked };
+				Destination = lastFree,
+				CellsBlocked = blocked
+			};
 		}
 	}
 }

@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 
 namespace Noexia.AI.DecisionMaking.TurnBased
 {
-        public class GameState : MomentaryState
-        {
+	public class GameState : MomentaryState
+	{
 		public readonly CharacterState Player;
 		public readonly IReadOnlyDictionary<int, CharacterState> Ennemies;
 		public readonly MapState Map;
@@ -20,9 +20,10 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 
 		private int m_totalEnnemiesHealth;
 		private int m_totalEnnemiesAlive;
+		private int m_receivedDamages;
 
-                private WeightConfiguration m_weightConfiguration;
-                public IEnumerable<string> History => m_history;
+		private WeightConfiguration m_weightConfiguration;
+		public IEnumerable<string> History => m_history;
 
 		public GameState(
 			CharacterState a_player, IReadOnlyDictionary<int, CharacterState> a_ennemies, MapState a_map,
@@ -39,7 +40,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 
 		public GameState(
 			CharacterState player, IReadOnlyDictionary<int, CharacterState> ennemies, MapState map,
-			int totalEnnemiesHealth, int totalEnnemiesAlive, int totalScore, List<string> history, List<IAction> actions, WeightConfiguration weightConfiguration)
+			int totalEnnemiesHealth, int totalEnnemiesAlive, int a_receivedDamages, int totalScore, List<string> history, List<IAction> actions, WeightConfiguration weightConfiguration)
 		{
 			Player = player;
 			m_actions = actions;
@@ -49,6 +50,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 			m_totalEnnemiesHealth = totalEnnemiesHealth;
 			m_totalEnnemiesAlive = totalEnnemiesAlive;
 			m_weightConfiguration = weightConfiguration;
+			m_receivedDamages = a_receivedDamages;
 			m_history = history ?? new List<string>();
 		}
 
@@ -70,7 +72,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 			IEnumerable<CellState> neighbors = Map.GetNeighbors(currentCell.X, currentCell.Y, true);
 			int added = 0;
 
-			foreach(CellState neighbor in neighbors)
+			foreach (CellState neighbor in neighbors)
 			{
 				MoveAction moveAction = new MoveAction(neighbor.X, neighbor.Y,
 					$"Move (from:{currentCell.X};{currentCell.Y}, to:{neighbor.X},{neighbor.Y})");
@@ -88,7 +90,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 
 			int added = 0;
 
-			foreach(var ennemiKvp in Ennemies)
+			foreach (var ennemiKvp in Ennemies)
 			{
 				var ennemi = ennemiKvp.Value;
 
@@ -177,13 +179,13 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 						Pathfinding.PushResult pushResult =
 							Pathfinding.GetPushDestination(attackCellTarget, playerCell, Map, attack.TotalPushDistance);
 
-						CellState destinationCell = pushResult.Destination;
-						Map.Move(attackEnemyTarget.Id, destinationCell);
+						if (pushResult.Destination != attackCellTarget)
+						{
+							CellState destinationCell = pushResult.Destination;
+							Map.Move(attackEnemyTarget.Id, destinationCell);
 
-						// on calcul le score de dégats reçus potentiels
-						// car on peut ne plus recevoir des dégats de cet ennemi à l'instant T ou au(x) mouvements suivants
-
-						m_history.Add($"Enemy {attackEnemyTarget.Id} is pushed to {destinationCell.X},{destinationCell.Y} by attack {attackAction.AttackId}");
+							m_history.Add($"Enemy {attackEnemyTarget.Id} is pushed to {destinationCell.X},{destinationCell.Y} by attack {attackAction.AttackId}");
+						}					
 					}
 
 					// On appliques ls dégats minimaux pour ne pas fosser le reste de la simulation
@@ -220,12 +222,12 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 				throw new InvalidOperationException($"Action type {a_action.GetType()} is not supported.");
 			}
 
-			m_history.Add($"End with {TotalScore + score} score (pa:{Player.ap}, pm:{Player.mp})");
-
 			m_actions.Add(a_action);
 
 			Score = score;
-			TotalScore += score;
+
+			FinalizeScore();
+			m_history.Add($"End with {TotalScore} ({TotalScore - Score} + {Score}) score (pa:{Player.ap}, pm:{Player.mp})");
 
 			return true;
 		}
@@ -248,73 +250,79 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 			return (int)((a * 100f) * m_weightConfiguration.PotentialAveragesDamages);
 		}
 
-                private int ComputeAveragesDamages(int a_damages)
-                {
-                        float a = (float)((float)a_damages / (float)m_totalEnnemiesHealth);
-                        return (int)((a * 100f) * m_weightConfiguration.Damages);
-                }
+		private int ComputeAveragesDamages(int a_damages)
+		{
+			float a = (float)((float)a_damages / (float)m_totalEnnemiesHealth);
+			return (int)((a * 100f) * m_weightConfiguration.Damages);
+		}
 
-                private int ComputePotentialReceivedDamages(int a_damages)
-                {
-                        float a = (float)a_damages / (float)Player.lp;
-                        return (int)((a * 100f) * m_weightConfiguration.PotentialReceivedDamages);
-                }
+		private int ComputePotentialReceivedDamages(int a_damages)
+		{
+			float a = (float)a_damages / (float)Player.lp;
+			return (int)((a * 100f) * m_weightConfiguration.PotentialReceivedDamages);
+		}
 
-                private int ComputeEnemiesPotentialAverageDamages()
-                {
-                        CellState playerCell = Map.GetCellWithCharacter(Player.Id);
-                        int totalDamages = 0;
+		private int ComputeEnemiesPotentialAverageDamages()
+		{
+			CellState playerCell = Map.GetCellWithCharacter(Player.Id);
+			int totalDamages = 0;
 
-                        foreach (var enemyKvp in Ennemies)
-                        {
-                                var enemy = enemyKvp.Value;
-                                if (enemy.IsDead || enemy.lp <= 0)
-                                        continue;
+			foreach (var enemyKvp in Ennemies)
+			{
+				var enemy = enemyKvp.Value;
+				if (enemy.IsDead || enemy.lp <= 0)
+					continue;
 
-                                CellState enemyCell = Map.GetCellWithCharacter(enemy.Id);
-                                int distance = Math.Abs(enemyCell.X - playerCell.X) + Math.Abs(enemyCell.Y - playerCell.Y);
+				CellState enemyCell = Map.GetCellWithCharacter(enemy.Id);
+				int distance = Math.Abs(enemyCell.X - playerCell.X) + Math.Abs(enemyCell.Y - playerCell.Y);
 
-                                int bestDamage = 0;
-                                foreach (var attack in enemy.Attacks)
-                                {
-                                        if (enemy.ap < attack.ApCost)
-                                                continue;
+				int bestDamage = 0;
+				foreach (var attack in enemy.Attacks)
+				{
+					if (enemy.ap < attack.ApCost)
+						continue;
 
-                                        if (attack.CanUse(Player.Id) == false)
-                                                continue;
+					if (attack.CanUse(Player.Id) == false)
+						continue;
 
-                                        int moveNeeded = 0;
-                                        if (distance > attack.RangeMax)
-                                                moveNeeded = distance - attack.RangeMax;
-                                        else if (distance < attack.RangeMin)
-                                                moveNeeded = attack.RangeMin - distance;
+					int moveNeeded = 0;
+					if (distance > attack.RangeMax)
+						moveNeeded = distance - attack.RangeMax;
+					else if (distance < attack.RangeMin)
+						moveNeeded = attack.RangeMin - distance;
 
-                                        if (moveNeeded > enemy.mp)
-                                                continue;
+					if (moveNeeded > enemy.mp)
+						continue;
 
-                                        var dmg = Formulas.ComputeDamages(attack.GetData, enemy, Player);
-                                        int uses = Math.Min(enemy.ap / attack.ApCost, attack.UsesPerturn);
-                                        if (uses <= 0)
-                                                continue;
-                                        int potential = dmg.totalDamagesAverage * uses;
-                                        if (potential > bestDamage)
-                                                bestDamage = potential;
-                                }
+					var dmg = Formulas.ComputeDamages(attack.GetData, enemy, Player);
+					int uses = Math.Min(enemy.ap / attack.ApCost, attack.UsesPerturn);
+					if (uses <= 0)
+						continue;
+					int potential = dmg.totalDamagesAverage * uses;
+					if (potential > bestDamage)
+						bestDamage = potential;
+				}
 
-                                totalDamages += bestDamage;
-                        }
+				totalDamages += bestDamage;
+			}
 
-                        return totalDamages;
-                }
+			return totalDamages;
+		}
 
-                public override void FinalizeState()
-                {
-                        int damages = ComputeEnemiesPotentialAverageDamages();
-                        int malus = ComputePotentialReceivedDamages(damages);
-                        m_history.Add($"Score ({TotalScore}) -= {malus} (potential received damages: {damages})");
-                        Score -= malus;
-                        TotalScore -= malus;
-                }
+		public override void FinalizeScore()
+		{
+			int damages = ComputeEnemiesPotentialAverageDamages();
+			int malus = ComputePotentialReceivedDamages(damages);
+			int lastReceivedDamges = m_receivedDamages;
+			m_receivedDamages = malus;
+
+			int diff = malus - lastReceivedDamges;
+
+			m_history.Add($"Score ({Score}) -= {diff} (potential received damages: {malus}, last received damages: {lastReceivedDamges})");
+			Score -= diff;
+			TotalScore += Score;
+
+		}
 
 		public override MomentaryState Clone()
 		{
@@ -324,6 +332,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 				Map.Clone(),
 				m_totalEnnemiesHealth,
 				m_totalEnnemiesAlive,
+				m_receivedDamages,
 				TotalScore,
 				new List<string>(m_history),
 				new List<IAction>(m_actions),

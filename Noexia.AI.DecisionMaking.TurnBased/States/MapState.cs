@@ -48,6 +48,11 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			return new MapState(cells, cellsWithCharacter, Width, Height, false);
 		}
 
+		public bool InsideBounds(int a_x, int a_y)
+		{
+			return a_x >= 0 && a_x < Width && a_y >= 0 && a_y < Height;
+		}
+
 		public void Move(int a_character, CellState a_cell)
 		{
 			a_cell.SetCharacter(a_character);

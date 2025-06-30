@@ -41,8 +41,11 @@ namespace Noexia.AI.DecisionMaking.TurnBased
 
 			MapState mapState = new MapState(cellStates, cellsWithCharacters, a_cells.GetLength(0), a_cells.GetLength(1));
 
-			GameState gameState = new GameState(playerState, enemyStates, mapState, a_weightConfiguration);
-			return m_minimax.MakeDecision(gameState, ref a_totalIterations, ref gameState);
+			GameState root = new GameState(playerState, enemyStates, mapState, a_weightConfiguration);
+			root.FinalizeScore();
+			GameState? best = null;
+			
+			return m_minimax.MakeDecision(root, ref a_totalIterations, ref best);
 		}
 	}
 }
