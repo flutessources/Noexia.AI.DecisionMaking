@@ -15,6 +15,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased.Data
 		public int rangeMax { get; set; }
 		public bool isRangeBoostable { get; set; }
 		public bool isRangeNeedLineOfSight { get; set; }
+		public bool needsFreeCell { get; set; } 
 		public bool isRangeLine { get; set; }
 		public List<AttackEffectData> effects { get; set; } = new List<AttackEffectData>();
 		public int usePerTurn { get; set; }

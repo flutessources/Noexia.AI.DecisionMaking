@@ -8,15 +8,13 @@ namespace Noexia.AI.DecisionMaking.TurnBased.Actions
 {
 	public class MoveAction : IAction
 	{
-		public readonly int TargetX;
-		public readonly int TargetY;
+		public readonly int TargetId;
 
 		public string Text { get; private set; }
 
-		public MoveAction(int targetX, int targetY, string text)
+		public MoveAction(int targetId, string text)
 		{
-			TargetX = targetX;
-			TargetY = targetY;
+			TargetId = targetId;
 			Text = text;
 		}
 

@@ -21,9 +21,9 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 				id = 1,
 				Characteristics = new CharacteristicsData()
 				{
-					airDamages = 100,
+					airDamages = 150,
 					earthDamages = 50,
-					fireDamages = 75,
+					fireDamages = 0,
 					waterDamages = 25,
 					airResitances = 20,
 					earthResitances = 10,
@@ -43,17 +43,18 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						id = 1,
 						apCost = 3,
 						isRangeBoostable = true,
-						isRangeLine = false,
-						isRangeNeedLineOfSight = true,
+						isRangeLine = true,
+						needsFreeCell = false,
+						isRangeNeedLineOfSight = false,
 						rangeMin = 1,
-						rangeMax = 5,
+						rangeMax = 2,
 						usePerTarget = 1,
 						usePerTurn = 2,
 						effects = new List<AttackEffectData>
 						{
 							new AttackPushEffect
 							{
-								pushDistance = 10,
+								pushDistance = 3,
 							},
 							new AttackElementDamageEffect
 							{
@@ -72,17 +73,18 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						isRangeBoostable = true,
 						isRangeLine = false,
 						isRangeNeedLineOfSight = true,
+						needsFreeCell = false,
 						rangeMin = 1,
-						rangeMax = 4,
+						rangeMax = 10,
 						usePerTarget = 2,
 						usePerTurn = 2,
 						effects = new List<AttackEffectData>
 						{
 							new AttackElementDamageEffect
 							{
-								damagesMin = 780,
-								damagesMax = 940,
-								damagesAverage = 800,
+								damagesMin = 8,
+								damagesMax = 15,
+								damagesAverage = 12,
 								element = EElement.Fire
 							}
 						}
@@ -98,7 +100,7 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 						id = 2,
 						Characteristics = new CharacteristicsData()
 						{
-							lp = 800,
+							lp = 50,
 							mp = 3,
 							ap = 5,
 							range = 4,
@@ -116,8 +118,9 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 								id = 3,
 								apCost = 3,
 								isRangeBoostable = false,
-								isRangeLine = true,
-								isRangeNeedLineOfSight = true,
+								isRangeLine = false,
+								isRangeNeedLineOfSight = false,
+								needsFreeCell = false,
 								rangeMin = 1,
 								rangeMax = 2,
 								usePerTarget = 1,
@@ -182,35 +185,46 @@ namespace Noexia.AI.DecisionMaking.Tests.TurnBased.Dofus
 				//}
 			};
 
-			CellData[,] map = new CellData[30, 30];
-			for (int i = 0; i < map.GetLength(0); i++)
+
+			// L'id des cellules fonctionne ainsi :
+			// La case la plus en haut à gauche commence par 0, et la plus en haut à droite à le plus grand id
+			// l'ID des cases suivantes fonctionne ainsi :
+			// right +14, Left -14, up +15, down -15
+			List<CellData> cells = new List<CellData>();
+			for (int i = 0; i < 15; i++)
 			{
-				for (int j = 0; j < map.GetLength(1); j++)
+				for (int j = 0; j < 15; j++)
 				{
-					map[i, j] = new CellData
+					cells.Add(new CellData
 					{
-						id = i * map.GetLength(1) + j,
-						x = i,
-						y = j,
-						isWalkable = true
-					};
+						id = i * 15 + j,
+						x = j,
+						y = i,
+						isWalkable = true,
+						isInteractive = false,
+						blockVisionLine = false
+					});
 				}
 			}
+
+			//Player au centre de la map, et ennemi collé à lui
+			int playerCellId = 0; // Cellule (7, 7)
+			int enemyCellId = 10 * 15 + 10;
 
 			int totalIterations = 0;
 
 			Console.WriteLine("Data crée");
 			Console.WriteLine("Décision making ...");
-			GameState? state = turnBasedDecisionMaker.MakeDecision(player, 10, 10, ennemies, map,
-				new Dictionary<int, (int a_x, int a_y)>()
+			GameState? state = turnBasedDecisionMaker.MakeDecision(player, playerCellId, 15, 15, ennemies, cells,
+				new Dictionary<int, int>()
 				{
-					{ 2, (11, 10) },
+					{ 2, enemyCellId },
 					//{ 4, (2, 2) }
 				},
 				new WeightConfiguration(), ref totalIterations);
 			Console.WriteLine($"Décision making terminé avec {state.Actions.Count} actions et un score total de {state.TotalScore}, pour un total de {totalIterations} itérations");
 
-			foreach(var action in state.History)
+			foreach (var action in state.History)
 			{
 				Console.WriteLine($"Action: {action}");
 			}

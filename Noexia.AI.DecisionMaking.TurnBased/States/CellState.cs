@@ -12,10 +12,13 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 		private readonly CellData m_cellData;
 		public int CharacterId { get; private set; } = 0;
 		private bool m_isWalkable = true;
-		public bool IsWalkable => m_cellData.isWalkable && m_isWalkable;
+		public bool IsWalkable => m_cellData.isWalkable && m_cellData.isInteractive == false && m_isWalkable;
+		public bool BlockVisionLine => m_cellData.blockVisionLine;
 		public int X => m_cellData.x;
 		public int Y => m_cellData.y;
 		public int Id => m_cellData.id;
+
+		public CellData GetData() => m_cellData;
 
 		public CellState(CellData a_cellData)
 		{

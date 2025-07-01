@@ -1,17 +1,17 @@
 ﻿using Noexia.AI.DecisionMaking.TurnBased.Data;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Noexia.AI.DecisionMaking.TurnBased.States
 {
 	public class MapState
 	{
-		private readonly CellState[,] m_cells;
+		private readonly Dictionary<int, CellState> m_cellsByIds = new();
 		private readonly Dictionary<int, CellState> m_cellsWithCharacter = new();
 		public readonly int Width;
 		public readonly int Height;
 
-		public MapState(CellState[,] a_cells, Dictionary<int, CellState> a_cellsWithCharacted, int a_width, int a_height, bool a_setCharacters = true)
+		public MapState(Dictionary<int, CellState> a_cells, Dictionary<int, CellState> a_cellsWithCharacted, int a_width, int a_height, bool a_setCharacters = true)
 		{
-			m_cells = a_cells;
 			Width = a_width;
 			Height = a_height;
 
@@ -24,33 +24,33 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 					cellWithCharacter.Value.SetCharacter(cellWithCharacter.Key);
 				}
 			}
+
+			m_cellsByIds = a_cells;
 		}
 
 		public MapState Clone()
 		{
-			CellState[,] cells = new CellState[m_cells.GetLength(0), m_cells.GetLength(1)];
 			Dictionary<int, CellState> cellsWithCharacter = new Dictionary<int, CellState>();
+			Dictionary<int, CellState> cellsByIds = new Dictionary<int, CellState>();
 
-			for (int i = 0; i < m_cells.GetLength(0); i++)
+			foreach(var cell in m_cellsByIds)
 			{
-				for (int j = 0; j < m_cells.GetLength(1); j++)
-				{
-					cells[i, j] = m_cells[i, j].Clone();
-				}
+				cellsByIds.Add(cell.Key, cell.Value.Clone());
 			}
 
-			foreach(var cellWithCharacter in m_cellsWithCharacter)
+			foreach (var cellWithCharacter in m_cellsWithCharacter)
 			{
 				// /!\ Important : On ne duplique pas les instances de CellState déjà clonés dans le tableau juste au dessus
-				cellsWithCharacter.Add(cellWithCharacter.Key, cells[cellWithCharacter.Value.X, cellWithCharacter.Value.Y]);
+				cellsWithCharacter.Add(cellWithCharacter.Key, cellsByIds[cellWithCharacter.Value.Id]);
 			}
 
-			return new MapState(cells, cellsWithCharacter, Width, Height, false);
+
+			return new MapState(cellsByIds, cellsWithCharacter, Width, Height, false);
 		}
 
 		public bool InsideBounds(int a_x, int a_y)
 		{
-			return a_x >= 0 && a_x < Width && a_y >= 0 && a_y < Height;
+			return m_cellsByIds.Any(cell => cell.Value.X == a_x && cell.Value.Y == a_y);
 		}
 
 		public void Move(int a_character, CellState a_cell)
@@ -89,58 +89,67 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			return m_cellsWithCharacter[a_characterId];
 		}
 
+		// Todo : éviter de l'utiliser
 		public CellState GetCell(int a_x, int a_y)
 		{
-			if (a_x < 0 || a_x >= Width || a_y < 0 || a_y >= Height)
+			var cell = m_cellsByIds.FirstOrDefault(cell => cell.Value.X == a_x && cell.Value.Y == a_y).Value;
+
+			if (cell == null)
 			{
-				throw new ArgumentOutOfRangeException("Coordinates are out of bounds.");
+				//foreach(var c in m_cellsByIds.Values)
+				//{
+				//	Console.WriteLine($"Cell ID: {c.Id}, X: {c.X}, Y: {c.Y}");
+				//}
+
+				//throw new KeyNotFoundException($"No cell found at coordinates ({a_x}, {a_y}). Cells count : " + m_cellsByIds.Count);
 			}
 
-			return m_cells[a_x, a_y];
+			return cell;
 		}
 
-		public IEnumerable<CellState> GetWalkableNeighbors(int a_startX, int a_startY)
-			=> GetNeighbors(a_startX, a_startY, true);
+		public CellState? GetCell(int a_id)
+		{
+			if (m_cellsByIds.TryGetValue(a_id, out CellState? cell))
+			{
+				return cell;
+			}
 
-		public IEnumerable<CellState> GetNeighbors(int a_startX, int a_startY, bool a_walkable)
+			return null;
+		}
+
+		public IEnumerable<CellState> GetNeighbors(int a_startId, bool a_walkable)
 		{
 			List<CellState> cells = new List<CellState>();
 
-			int left = a_startX - 1;
-			if (left >= 0)
+			if (m_cellsByIds.TryGetValue(a_startId + 14, out CellState cell))
 			{
-                                CellState leftCell = m_cells[left, a_startY];
-                                if (a_walkable == false || leftCell.IsWalkable)
+				if ((a_walkable == true && cell.IsWalkable) || a_walkable == false)
 				{
-					cells.Add(m_cells[left, a_startY]);
+					cells.Add(cell);
 				}
 			}
 
-			int right = a_startX + 1;
-			if (right < Width)
+			if (m_cellsByIds.TryGetValue(a_startId - 14, out cell))
 			{
-                                CellState rightCell = m_cells[right, a_startY];
-                                if (a_walkable == false || rightCell.IsWalkable)
+				if ((a_walkable == true && cell.IsWalkable) || a_walkable == false)
 				{
-					cells.Add(m_cells[right, a_startY]);
+					cells.Add(cell);
 				}
 			}
 
-			int up = a_startY - 1;
-			if (up >= 0)
+			if (m_cellsByIds.TryGetValue(a_startId + 15, out cell))
 			{
-                                if (a_walkable == false || m_cells[a_startX, up].IsWalkable)
+				if ((a_walkable == true && cell.IsWalkable) || a_walkable == false)
 				{
-					cells.Add(m_cells[a_startX, up]);
+					cells.Add(cell);
 				}
 			}
 
-			int down = a_startY + 1;
-			if (down < Height)
+			if (m_cellsByIds.TryGetValue(a_startId - 15, out cell))
 			{
-                                if (a_walkable == false || m_cells[a_startX, down].IsWalkable)
+				if ((a_walkable == true && cell.IsWalkable) || a_walkable == false)
 				{
-					cells.Add(m_cells[a_startX, down]);
+					cells.Add(cell);
 				}
 			}
 

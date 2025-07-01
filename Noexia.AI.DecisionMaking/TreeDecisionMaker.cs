@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Noexia.AI.DecisionMaking
 {
-    public class MiniMaxDecisionMaker<T> : DecisionMaker<T>
+    public class TreeDecisionMaker<T> : DecisionMaker<T>
         where T : MomentaryState
     {
 		public override T? MakeDecision(T state, ref int totalIterations, ref T bestState)

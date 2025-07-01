@@ -14,6 +14,9 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 		public readonly IReadOnlyDictionary<int, AttackState> AttacksById;
 		public int Id => m_characterData.id;
 		public bool IsDead { get; private set; } = false;
+		public int MaxMP => m_characterData.Characteristics.mp;
+		public int MaxLP => m_characterData.Characteristics.lp;
+		public int MaxAP => m_characterData.Characteristics.ap;
 
 		#region Characteristics
 		public int lp { get; private set; }

@@ -12,5 +12,7 @@ namespace Noexia.AI.DecisionMaking.TurnBased.Data
 		public int x { get; set; }
 		public int y { get; set; }
 		public bool isWalkable { get; set; }
+		public bool isInteractive { get; set; }
+		public bool blockVisionLine { get; set; }
 	}
 }

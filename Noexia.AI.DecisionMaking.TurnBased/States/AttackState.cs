@@ -96,19 +96,32 @@ namespace Noexia.AI.DecisionMaking.TurnBased.States
 			TotalPushDistance = totalPushDistance;
 		}
 
-		public bool CanUse(int a_characterId)
+		public bool CanUse(CellState a_cellStart, CellState a_cellDest, MapState a_mapState, int aditionnalRange)
 		{
-			if (m_usesPerTurn <= 0)
+			if (m_usesPerTurn <= 0 && m_attackData.usePerTurn != 0)
 			{
 				return false;
 			}
 
-			if (m_usePerTargets.ContainsKey(a_characterId) && m_usePerTargets[a_characterId] <= 0)
+			if (m_attackData.usePerTarget != 0)
 			{
-				return false;
+				if (a_cellDest.CharacterId != 0)
+				{
+					if (m_usePerTargets.ContainsKey(a_cellDest.CharacterId) && m_usePerTargets[a_cellDest.CharacterId] <= 0)
+					{
+						return false;
+					}
+				}
 			}
 
-			return true;
+
+			var range = Pathfinding.GetSpellRange(
+				a_cellStart, m_attackData.rangeMin, m_attackData.rangeMax, m_attackData.isRangeBoostable,
+				m_attackData.isRangeLine, m_attackData.needsFreeCell, m_attackData.isRangeNeedLineOfSight, a_mapState, aditionnalRange);
+			// Line of sight check
+			// Line launch check
+
+			return range.Contains(a_cellDest.Id);
 		}
 
 		public void Use(int a_characterId)
